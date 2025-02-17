@@ -1,0 +1,8 @@
+mqtt:
+  broker: "tcp://localhost:1883"
+  topics:
+    - "topic1"
+    - "topic2"
+
+otlp:
+  endpoint: "http://localhost:4317"
