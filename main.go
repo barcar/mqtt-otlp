@@ -2,9 +2,11 @@ package main
 
 import (
     "context"
+    "fmt"
     "log"
     "os"
     "strings"
+    "time"
 
     mqtt "github.com/eclipse/paho.mqtt.golang"
     "go.opentelemetry.io/otel"
@@ -54,4 +56,32 @@ func main() {
     }
 
     // Initialize OTLP tracer
-    tracer, err := Initialize
+    tracer, err := InitializeTracer()
+    if err != nil {
+        log.Fatalf("Failed to initialize tracer: %v", err)
+    }
+
+    // Block main goroutine to keep the application running
+    select {}
+}
+
+// messageHandler handles incoming MQTT messages
+func messageHandler(client mqtt.Client, msg mqtt.Message) {
+    tracer := otel.Tracer("mqtt-otlp")
+    ctx := context.Background()
+    _, span := tracer.Start(ctx, "mqtt-message")
+    defer span.End()
+
+    // Extract message details
+    topic := msg.Topic()
+    payload := string(msg.Payload())
+
+    // Log the message
+    log.Printf("Received message on topic %s: %s", topic, payload)
+
+    // Add attributes to the span
+    span.SetAttributes(
+        otel.LabelKeyValue{Key: "mqtt.topic", Value: otel.StringValue(topic)},
+        otel.LabelKeyValue{Key: "mqtt.payload", Value: otel.StringValue(payload)},
+    )
+}
