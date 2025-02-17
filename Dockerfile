@@ -23,6 +23,9 @@ FROM debian:buster
 # Copy the Pre-built binary file from the previous stage
 COPY --from=builder /app/main /app/main
 
+# Copy the configuration file
+COPY config.yaml /app/config.yaml
+
 # Expose port 8080 to the outside world
 EXPOSE 8080
 
